@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>My Bills</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.0/css/bootstrap.min.css}">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --sidebar-bg: #1e293b;
+            --card-border: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+        }
+
+        body {
+            background-color: #f8fafc;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+        }
+
+        .sidebar {
+            height: 100vh;
+            width: 280px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: var(--sidebar-bg);
+            padding: 1.5rem 0;
+            box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .user-info {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 1rem;
+        }
+
+        .user-info p {
+            color: #e2e8f0;
+            margin: 0;
+        }
+
+        .user-info .username {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .user-info .role {
+            opacity: 0.8;
+            font-size: 0.875rem;
+        }
+
+        .sidebar-link {
+            padding: 0.875rem 1.5rem;
+            text-decoration: none;
+            color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s ease;
+            margin: 0.25rem 1rem;
+            border-radius: 0.5rem;
+        }
+
+        .sidebar-link:hover, .sidebar-link.active {
+            background-color: var(--primary-color);
+            color: white;
+            text-decoration: none;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 2rem;
+        }
+
+        .bill-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--card-border);
+            margin-bottom: 1rem;
+            transition: transform 0.2s ease;
+        }
+
+        .bill-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: inline-block;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-paid {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-overdue {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .btn-pay {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-pay:hover {
+            background-color: #1d4ed8;
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: #ef4444;
+            border: none;
+            width: calc(100% - 2rem);
+            margin: 1rem;
+            border-radius: 0.5rem;
+            color: white;
+            padding: 0.625rem 1.25rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+
+        .form-select {
+            border-radius: 0.5rem;
+            border-color: var(--card-border);
+            padding: 0.5rem;
+        }
+
+        .alert {
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 0;
+                transform: translateX(-100%);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="user-info">
+            <p class="username">Welcome, <span th:text="${username}">Username</span></p>
+            <p class="role" th:text="${role}">Guest</p>
+        </div>
+        
+        <a th:href="@{/guest/dashboard}" class="sidebar-link">
+            Dashboard
+        </a>
+        <a th:href="@{/bookings/guest/list}" class="sidebar-link">
+            My Reservations
+        </a>
+        <a th:href="@{/guest/extend-checkout}" class="sidebar-link">
+            Extend Check-out
+        </a>
+        <a th:href="@{/guest/bills}" class="sidebar-link active">
+            My Bills
+        </a>
+        
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="btn btn-danger">Logout</button>
+        </form>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="page-header mb-4">
+            <h1>My Bills</h1>
+        </div>
+
+        <!-- Success Message -->
+        <div th:if="${param.success}" class="alert alert-success">
+            Payment processed successfully!
+        </div>
+
+        <!-- Error Message -->
+        <div th:if="${param.error}" class="alert alert-danger" th:text="${param.error}">
+            Error processing payment
+        </div>
+
+        <!-- No Bills Message -->
+        <div th:if="${#lists.isEmpty(bills)}" class="alert alert-info">
+            You don't have any bills yet.
+        </div>
+
+        <!-- Bills List -->
+        <div th:if="${not #lists.isEmpty(bills)}" class="bills-container">
+            <div th:each="bill : ${bills}" class="bill-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="mb-0">Bill #<span th:text="${bill.id}"></span></h3>
+                    <span th:class="'status-badge ' + 'status-' + ${bill.paymentStatus.name().toLowerCase()}"
+                          th:text="${bill.paymentStatus}">
+                        PENDING
+                    </span>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Room Number:</strong> <span th:text="${bill.roomNumber}"></span></p>
+                        <p><strong>Total Amount:</strong> $<span th:text="${#numbers.formatDecimal(bill.totalAmount, 1, 2)}"></span></p>
+                        <p><strong>Due Date:</strong> <span th:text="${#temporals.format(bill.dueDate, 'MMM dd, yyyy')}"></span></p>
+                        <p><strong>Created:</strong> <span th:text="${#temporals.format(bill.creationDate, 'MMM dd, yyyy HH:mm')}"></span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <!-- Payment Details for Paid Bills -->
+                        <div th:if="${bill.paymentStatus.name() == 'PAID'}" class="payment-details">
+                            <p><strong>Payment Date:</strong> <span th:text="${#temporals.format(bill.paymentDate, 'MMM dd, yyyy HH:mm')}"></span></p>
+                            <p><strong>Payment Method:</strong> <span th:text="${bill.paymentMethod}"></span></p>
+                            <p><strong>Transaction ID:</strong> <span th:text="${bill.transactionId}"></span></p>
+                        </div>
+
+                        <!-- Payment Form for Pending Bills -->
+                        <div th:if="${bill.paymentStatus.name() == 'PENDING'}" class="payment-form">
+                            <form th:action="@{/guest/bills/pay/{id}(id=${bill.id})}" method="post" class="mt-3">
+                                <div class="mb-3">
+                                    <select name="paymentMethod" class="form-select" required>
+                                        <option value="">Select Payment Method</option>
+                                        <option value="CREDIT_CARD">Credit Card</option>
+                                        <option value="DEBIT_CARD">Debit Card</option>
+                                        <option value="PAYPAL">PayPal</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-pay">Pay Now</button>
+                            </form>
+                        </div>
+
+                        <!-- Message for Overdue Bills -->
+                        <div th:if="${bill.paymentStatus.name() == 'OVERDUE'}" class="alert alert-warning mt-3">
+                            This bill is overdue. Please contact reception for assistance.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/webjars/jquery/3.7.0/jquery.min.js}"></script>
+    <script th:src="@{/webjars/bootstrap/5.3.0/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

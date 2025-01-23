@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Home</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to Hotel Management System</h1>
+        <div class="user-info">
+            <p>You are logged in as: <span sec:authentication="name"></span></p>
+            <p>Role: <span sec:authentication="principal.authorities"></span></p>
+        </div>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="btn btn-primary">Logout</button>
+        </form>
+    </div>
+</body>
+</html>

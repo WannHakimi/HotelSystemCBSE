@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Bill Management</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.0/css/bootstrap.min.css}">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --sidebar-bg: #1e293b;
+            --card-border: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+        }
+
+        body {
+            background-color: #f8fafc;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+        }
+
+        .sidebar {
+            height: 100vh;
+            width: 280px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: var(--sidebar-bg);
+            padding: 1.5rem 0;
+            box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .user-info {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 1rem;
+        }
+
+        .user-info p {
+            color: #e2e8f0;
+            margin: 0;
+        }
+
+        .user-info .username {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .user-info .role {
+            opacity: 0.8;
+            font-size: 0.875rem;
+        }
+
+        .sidebar-link {
+            padding: 0.875rem 1.5rem;
+            text-decoration: none;
+            color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s ease;
+            margin: 0.25rem 1rem;
+            border-radius: 0.5rem;
+        }
+
+        .sidebar-link:hover, .sidebar-link.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 2rem;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        /* Generate Bill Form */
+        .generate-bill-form {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--card-border);
+            margin-bottom: 2rem;
+        }
+
+        .generate-bill-form h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--card-border);
+            border-radius: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Bill Grid */
+        .bills-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        .bill-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--card-border);
+        }
+
+        .bill-card h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0 0 1rem 0;
+        }
+
+        .bill-info {
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: inline-block;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-paid {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-overdue {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.625rem 1.25rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        .btn-danger {
+            background-color: #ef4444;
+            border: none;
+            width: calc(100% - 2rem);
+            margin: 1rem;
+            border-radius: 0.5rem;
+            color: white;
+            padding: 0.625rem 1.25rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+
+        @media (max-width: 1200px) {
+            .bills-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 0;
+                transform: translateX(-100%);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="user-info">
+            <p class="username">Welcome, <span th:text="${username}">Username</span></p>
+            <p class="role" th:text="${role}">Role</p>
+        </div>
+        
+        <a th:href="@{/receptionist/dashboard}" class="sidebar-link">
+            Dashboard
+        </a>
+        <a th:href="@{/receptionist/rooms}" class="sidebar-link">
+            Room Management
+        </a>
+        <a th:href="@{/bookings/receptionist/list}" class="sidebar-link">
+            Reservations
+        </a>
+        <a th:href="@{/receptionist/checkinout}" class="sidebar-link">
+            Guest Check-in/out
+        </a>
+        <a th:href="@{/receptionist/bills}" class="sidebar-link active">
+            Bills Management
+        </a>
+        
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="btn btn-danger">Logout</button>
+        </form>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="page-header">
+            <h1>Bill Management</h1>
+        </div>
+
+        <!-- Generate Bill Form -->
+        <div class="generate-bill-form">
+            <h2>Generate New Bill</h2>
+            <form th:action="@{/receptionist/bills/generate}" method="post">
+                <div class="form-group">
+                    <label for="bookingId">Booking ID</label>
+                    <input type="text" id="bookingId" name="bookingId" class="form-control" placeholder="Enter booking ID" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Generate Bill</button>
+            </form>
+        </div>
+
+        <!-- Bills Grid -->
+        <h2>Generated Bills</h2>
+        <div th:if="${bills != null and !bills.empty}" class="bills-grid">
+            <div th:each="bill : ${bills}" class="bill-card">
+                <h3>Bill ID: <span th:text="${bill.id}"></span></h3>
+                <div class="bill-info">
+                    <strong>Booking ID:</strong> <span th:text="${bill.bookingId}"></span>
+                </div>
+                <div class="bill-info">
+                    <strong>Room Number:</strong> <span th:text="${bill.roomNumber}"></span>
+                </div>
+                <div class="bill-info">
+                    <strong>Total Amount:</strong> $<span th:text="${bill.totalAmount}"></span>
+                </div>
+                <div class="bill-info">
+                    <strong>Due Date:</strong> <span th:text="${#temporals.format(bill.dueDate, 'dd-MM-yyyy')}"></span>
+                </div>
+                <div class="bill-info">
+                    <strong>Status:</strong> 
+                    <span th:class="${'status-badge ' + 
+                        (bill.paymentStatus == 'PENDING' ? 'status-pending' : 
+                        bill.paymentStatus == 'PAID' ? 'status-paid' : 
+                        'status-overdue')}"
+                        th:text="${bill.paymentStatus}">
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div th:if="${bills == null or bills.empty}">
+            <p>No bills have been generated yet.</p>
+        </div>
+    </div>
+
+    <script th:src="@{/webjars/jquery/3.7.0/jquery.min.js}"></script>
+    <script th:src="@{/webjars/bootstrap/5.3.0/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

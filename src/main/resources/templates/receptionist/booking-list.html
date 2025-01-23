@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>View Bookings</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #64748b;
+            --sidebar-bg: #1e293b;
+            --card-border: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+        }
+
+        body {
+            background-color: #f8fafc;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            height: 100vh;
+            width: 280px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: var(--sidebar-bg);
+            padding: 1.5rem 0;
+            box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .user-info {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 1rem;
+        }
+
+        .user-info p {
+            color: #e2e8f0;
+            margin: 0;
+        }
+
+        .user-info .username {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .user-info .role {
+            opacity: 0.8;
+            font-size: 0.875rem;
+        }
+
+        .sidebar-link {
+            padding: 0.875rem 1.5rem;
+            text-decoration: none;
+            color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s ease;
+            margin: 0.25rem 1rem;
+            border-radius: 0.5rem;
+        }
+
+        .sidebar-link:hover, .sidebar-link.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            padding: 2rem;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        /* Filter Section */
+        .filter-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--card-border);
+            margin-bottom: 2rem;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control {
+            padding: 0.5rem;
+            border: 1px solid var(--card-border);
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        /* Table Styling */
+        .table-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--card-border);
+            overflow-x: auto;
+        }
+
+        .booking-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .booking-table th {
+            background: #f8fafc;
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .booking-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--card-border);
+            font-size: 0.875rem;
+        }
+
+        /* Status Badge Styling */
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            display: inline-block;
+        }
+
+        .status-confirmed {
+            background-color: #dcfce7;
+            color: #15803d;
+        }
+
+        .status-cancelled {
+            background-color: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .status-completed {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: var(--text-primary);
+        }
+
+        .btn-danger {
+            background-color: #ef4444;
+            border: none;
+            width: calc(100% - 2rem);
+            margin: 1rem;
+            border-radius: 0.5rem;
+            color: white;
+            padding: 0.625rem 1.25rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="user-info">
+            <p class="username">Welcome, <span th:text="${username}">Username</span></p>
+            <p class="role" th:text="${role}">Role</p>
+        </div>
+        
+        <a th:href="@{/receptionist/dashboard}" class="sidebar-link">
+            Dashboard
+        </a>
+        <a th:href="@{/receptionist/rooms}" class="sidebar-link">
+            Room Management
+        </a>
+        <a th:href="@{/bookings/receptionist/list}" class="sidebar-link active">
+            Reservations
+        </a>
+        <a th:href="@{/receptionist/checkinout}" class="sidebar-link">
+            Guest Check-in/out
+        </a>
+        <a th:href="@{/receptionist/bills}" class="sidebar-link">
+            Bills Management
+        </a>
+        
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="btn btn-danger">Logout</button>
+        </form>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="page-header">
+            <h1>View Bookings</h1>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-card">
+            <form th:action="@{/bookings/receptionist/list}" method="get">
+                <div class="filter-grid">
+                    <div class="form-group">
+                        <label>Start Date</label>
+                        <input type="date" class="form-control" name="startDate" th:value="${startDate}"/>
+                    </div>
+                    <div class="form-group">
+                        <label>End Date</label>
+                        <input type="date" class="form-control" name="endDate" th:value="${endDate}"/>
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select class="form-control" name="status">
+                            <option value="">All</option>
+                            <option value="CONFIRMED" th:selected="${status == 'CONFIRMED'}">Confirmed</option>
+                            <option value="CANCELLED" th:selected="${status == 'CANCELLED'}">Cancelled</option>
+                            <option value="COMPLETED" th:selected="${status == 'COMPLETED'}">Completed</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="justify-content: flex-end;">
+                        <div class="action-buttons">
+                            <button type="submit" class="btn btn-primary">Search</button>
+                            <a th:href="@{/bookings/receptionist/list}" class="btn btn-secondary">Reset</a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Bookings Table -->
+        <div class="table-card">
+            <table class="booking-table">
+                <thead>
+                    <tr>
+                        <th>Booking ID</th>
+                        <th>Guest</th>
+                        <th>Room Number</th>
+                        <th>Check-in Date</th>
+                        <th>Check-out Date</th>
+                        <th>Total Price</th>
+                        <th>Status</th>
+                        <th>Booking Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="booking : ${bookings}">
+                        <td th:text="${booking.id}"></td>
+                        <td th:text="${booking.userId}"></td>
+                        <td th:text="${booking.roomNumber}"></td>
+                        <td th:text="${#temporals.format(booking.checkInDate, 'dd-MM-yyyy')}"></td>
+                        <td th:text="${#temporals.format(booking.checkOutDate, 'dd-MM-yyyy')}"></td>
+                        <td>$<span th:text="${#numbers.formatDecimal(booking.totalPrice, 0, 2)}"></span></td>
+                        <td>
+                            <span class="status-badge"
+                                  th:classappend="${'status-' + booking.status.getLowerCase()}"
+                                  th:text="${booking.status}">
+                            </span>
+                        </td>
+                        <td th:text="${#temporals.format(booking.bookingDate, 'dd-MM-yyyy')}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script th:src="@{/webjars/jquery/3.7.0/jquery.min.js}"></script>
+    <script th:src="@{/webjars/bootstrap/5.3.0/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

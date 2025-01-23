@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Extend Checkout</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #64748b;
+            --sidebar-bg: #1e293b;
+            --card-border: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+        }
+
+        body {
+            background-color: #f8fafc;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            height: 100vh;
+            width: 280px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: var(--sidebar-bg);
+            padding: 1.5rem 0;
+            box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .user-info {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 1rem;
+        }
+
+        .user-info p {
+            color: #e2e8f0;
+            margin: 0;
+        }
+
+        .user-info .username {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .sidebar-link {
+            padding: 0.875rem 1.5rem;
+            text-decoration: none;
+            color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s ease;
+            margin: 0.25rem 1rem;
+            border-radius: 0.5rem;
+        }
+
+        .sidebar-link:hover, .sidebar-link.active {
+            background-color: var(--primary-color);
+            color: white;
+            text-decoration: none;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            padding: 2rem;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        /* Form Card */
+        .form-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--card-border);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .booking-info {
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            margin-bottom: 2rem;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .info-value {
+            font-weight: 500;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.625rem;
+            border: 1px solid var(--card-border);
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .btn {
+            padding: 0.625rem 1.25rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: var(--text-secondary);
+        }
+
+        .btn-danger {
+            background-color: #ef4444;
+            color: white;
+            width: calc(100% - 2rem);
+            margin: 1rem;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .alert-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .alert-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn-group .btn {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="user-info">
+            <p class="username">Welcome, <span th:text="${username}">Username</span></p>
+            <p class="role" th:text="${role}">Guest</p>
+        </div>
+        
+        <a th:href="@{/guest/dashboard}" class="sidebar-link ">
+            Dashboard
+        </a>
+        <a th:href="@{/bookings/guest/list}" class="sidebar-link">
+            My Reservations
+        </a>
+        <a th:href="@{/guest/extend-checkout}" class="sidebar-link active">
+            Extend Check-out
+        </a>
+        <a th:href="@{/guest/bills}" class="sidebar-link">
+            My Bills 
+        </a>
+        
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="btn btn-danger">Logout</button>
+        </form>
+    </div>
+        
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="page-header">
+            <h1>Extend Checkout</h1>
+        </div>
+
+        <!-- Success/Error Messages -->
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+        <div class="form-card">
+            <!-- Current Booking Info -->
+            <div th:if="${currentBooking}" class="booking-info">
+                <div class="info-row">
+                    <span class="info-label">Current Room:</span>
+                    <span class="info-value" th:text="${'Room ' + currentBooking.roomNumber}">Room 101</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Current Check-out:</span>
+                    <span class="info-value" th:text="${#temporals.format(currentBooking.checkOutDate, 'dd-MM-yyyy')}">22-01-2025</span>
+                </div>
+            </div>
+
+            <!-- Extension Request Form -->
+            <form th:if="${currentBooking}" th:action="@{/guest/extend-checkout}" method="post">
+                <input type="hidden" name="bookingId" th:value="${currentBooking.id}" />
+                
+                <div class="form-group">
+                    <label for="extensionDays">Number of Days to Extend</label>
+                    <select class="form-control" id="extensionDays" name="extensionDays" required>
+                        <option value="1">1 Day</option>
+                        <option value="2">2 Days</option>
+                        <option value="3">3 Days</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="reason">Reason for Extension</label>
+                    <textarea class="form-control" id="reason" name="reason" rows="3" required></textarea>
+                </div>
+
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-primary">Request Extension</button>
+                    <a th:href="@{/guest/dashboard}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+
+            <!-- No Active Booking Message -->
+            <div th:unless="${currentBooking}" class="alert alert-danger">
+                You don't have any active bookings to extend.
+            </div>
+        </div>
+    </div>
+</body>
+</html>

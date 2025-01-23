@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Check-in/Check-out Management</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.0/css/bootstrap.min.css}">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #64748b;
+            --success-color: #10b981;
+            --danger-color: #dc2626;
+            --warning-color: #f59e0b;
+            --sidebar-bg: #1e293b;
+            --card-border: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+        }
+
+        body {
+            background-color: #f8fafc;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        /* Sidebar Styles */
+        .sidebar {
+            height: 100vh;
+            width: 280px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: var(--sidebar-bg);
+            padding: 1.5rem 0;
+            box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .user-info {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 1rem;
+        }
+
+        .user-info p {
+            color: #e2e8f0;
+            margin: 0;
+        }
+
+        .user-info .username {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .user-info .role {
+            opacity: 0.8;
+            font-size: 0.875rem;
+        }
+
+        .sidebar-link {
+            padding: 0.875rem 1.5rem;
+            text-decoration: none;
+            color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s ease;
+            margin: 0.25rem 1rem;
+            border-radius: 0.5rem;
+        }
+
+        .sidebar-link:hover, .sidebar-link.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            padding: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--card-border);
+        }
+
+        /* Booking Cards Grid */
+        .bookings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .booking-card {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--card-border);
+        }
+
+        .booking-card h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .info-row {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+            align-items: center;
+        }
+
+        .info-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .info-value {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        /* Status Badges */
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 2rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        .status-confirmed {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+
+        .status-checked-in {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+        /* Action Buttons */
+        .btn-danger {
+            background-color: #ef4444;
+            border: none;
+            width: calc(100% - 2rem);
+            margin: 1rem;
+            border-radius: 0.5rem;
+            color: white;
+            padding: 0.625rem 1.25rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+        
+        .btn-action {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            margin-top: 1rem;
+        }
+
+        .no-bookings {
+            text-align: center;
+            padding: 2rem;
+            background: white;
+            border-radius: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 0;
+                transform: translateX(-100%);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .bookings-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="user-info">
+            <p class="username">Welcome, <span th:text="${username}">Username</span></p>
+            <p class="role" th:text="${role}">Role</p>
+        </div>
+        
+        <a th:href="@{/receptionist/dashboard}" class="sidebar-link ">
+            Dashboard
+        </a>
+        <a th:href="@{/receptionist/rooms}" class="sidebar-link ">
+            Room Management
+        </a>
+        <a th:href="@{/bookings/receptionist/list}" class="sidebar-link">
+            Reservations
+        </a>
+        <a th:href="@{/receptionist/checkinout}" class="sidebar-link active">
+            Guest Check-in/out
+        </a>
+        <a th:href="@{/receptionist/bills}" class="sidebar-link ">
+            Bills Management
+        </a>
+        
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="btn btn-danger">Logout</button>
+        </form>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Alert Messages -->
+        <div th:if="${successMessage}" class="alert alert-success" role="alert">
+            <span th:text="${successMessage}">Success message</span>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+            <span th:text="${errorMessage}">Error message</span>
+        </div>
+
+        <!-- Check-ins Section -->
+        <div class="section-title">Today's Check-ins</div>
+        <div class="bookings-grid">
+            <div th:if="${checkIns.empty}" class="no-bookings">
+                <p>No check-ins scheduled for today</p>
+            </div>
+            <div th:each="booking : ${checkIns}" class="booking-card">
+                <h3>Room <span th:text="${booking.roomNumber}">101</span></h3>
+                <div class="info-row">
+                    <span class="info-label">Booking ID:</span>
+                    <span class="info-value" th:text="${booking.id}">12345</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Guest:</span>
+                    <span class="info-value" th:text="${booking.userId}">John Doe</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Check-in Date:</span>
+                    <span class="info-value" th:text="${#temporals.format(booking.checkInDate, 'dd-MM-yyyy')}">01-01-2024</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Status:</span>
+                    <span class="status-badge status-confirmed" th:text="${booking.status}">CONFIRMED</span>
+                </div>
+                <form th:if="${checkInOutService.canCheckIn(booking)}"
+                      th:action="@{/receptionist/checkinout/checkin}"
+                      method="post">
+                    <input type="hidden" name="bookingId" th:value="${booking.id}">
+                    <button type="submit" class="btn btn-success btn-action">Process Check-in</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Check-outs Section -->
+        <div class="section-title">Today's Check-outs</div>
+        <div class="bookings-grid">
+            <div th:if="${checkOuts.empty}" class="no-bookings">
+                <p>No check-outs scheduled for today</p>
+            </div>
+            <div th:each="booking : ${checkOuts}" class="booking-card">
+                <h3>Room <span th:text="${booking.roomNumber}">102</span></h3>
+                <div class="info-row">
+                    <span class="info-label">Booking ID:</span>
+                    <span class="info-value" th:text="${booking.id}">12346</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Guest:</span>
+                    <span class="info-value" th:text="${booking.userId}">Jane Doe</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Check-out Date:</span>
+                    <span class="info-value" th:text="${#temporals.format(booking.checkOutDate, 'dd-MM-yyyy')}">05-01-2024</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Status:</span>
+                    <span class="status-badge status-checked-in" th:text="${booking.status}">CHECKED_IN</span>
+                </div>
+                <form th:if="${checkInOutService.canCheckOut(booking)}"
+                      th:action="@{/receptionist/checkinout/checkout}"
+                      method="post">
+                    <input type="hidden" name="bookingId" th:value="${booking.id}">
+                    <button type="submit" class="btn btn-primary btn-action">Process Check-out</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/webjars/jquery/3.7.0/jquery.min.js}"></script>
+    <script th:src="@{/webjars/bootstrap/5.3.0/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>
